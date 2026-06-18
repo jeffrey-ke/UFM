@@ -12,7 +12,7 @@ authors = [
 ]
 license = { text = "BSD Clause-3" }
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 keywords = ["computer-vision", "optical-flow", "correspondence", "deep-learning", "pytorch", "transformer"]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -34,18 +34,24 @@ dependencies = [
     "huggingface_hub",
     "einops",
     "gradio",
+    # UniCeption (DINOv2 encoder, global-attention transformer, DPT heads, adaptors).
+    # Pinned to the same commit as the UniCeption git submodule. Pure-Python install;
+    # the CUDA CroCo-RoPE kernel and xformers are opt-in and not used by UFM.
+    "uniception @ git+https://github.com/castacks/UniCeption.git@1cff08065666d351b2bbdf2db678a4df196afa43",
     # UniCeption dependencies
     "timm",
     "jaxtyping",
     "Pillow",
     "scikit-learn",
+    # Training / data pipeline
     "hydra-core",
     "h5py",
     "imageio",
     "pypng",
     "wandb",
     "lightning",
-    "transformers"
+    "transformers",
+    "vision-core",
 ]
 
 [project.optional-dependencies]
@@ -54,16 +60,6 @@ dev = [
     "isort",
     "pre-commit",
     "pytest",
-]
-demo = [
-    "gradio",
-]
-all = [
-    "black",
-    "isort",
-    "pre-commit",
-    "pytest",
-    "gradio",
 ]
 
 [project.scripts]
@@ -75,6 +71,15 @@ Homepage = "https://uniflowmatch.github.io/"
 Repository = "https://github.com/UniFlowMatch/UFM.git"
 Documentation = "https://uniflowmatch.github.io/"
 "Bug Tracker" = "https://github.com/UniFlowMatch/UFM/issues"
+
+# Flat layout: ship only the `uniflowmatch` package plus the top-level `gradio_demo`
+# module that `uniflowmatch.cli.launch_demo` imports. Explicit selection is required
+# because the repo root holds several non-package dirs (configs/, scripts/, benchmarks/, ...).
+[tool.setuptools.packages.find]
+include = ["uniflowmatch*"]
+
+[tool.setuptools]
+py-modules = ["gradio_demo"]
 
 [tool.black]
 line-length = 120
@@ -97,3 +102,16 @@ exclude = '''
 [tool.isort]
 profile = "black"
 line_length = 120
+
+[tool.uv.sources]
+vision-core = { path = "../vision_core", editable = true }
+# Pin torch to CUDA 12.8 wheels: the default PyPI wheels are +cu130, which needs a
+# newer NVIDIA driver than this branch targets (driver 570 supports CUDA <= 12.8).
+torch = { index = "pytorch-cu128" }
+torchvision = { index = "pytorch-cu128" }
+torchaudio = { index = "pytorch-cu128" }
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true

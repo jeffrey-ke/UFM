@@ -43,7 +43,16 @@ We have completed cleaning the data processing, all data should be ready. Please
 ## Getting Started
 ### Setup Environment
 
-You will need to `pip install -e .` again if you switched to here from the other branches.
+This branch is a [uv](https://docs.astral.sh/uv/) project. Create the environment with:
+
+```bash
+uv sync                 # inference + training stack; add --extra dev for lint/test tools
+```
+
+`uniception` is installed automatically from its pinned git commit, so `git submodule update --init`
+is **not** required (the submodule remains only if you want the source on disk). Run tools inside the
+environment with `uv run` (e.g. `uv run ufm test`, `uv run python scripts/train.py ...`) or activate it
+with `source .venv/bin/activate`.
 
 
 ### Setup Data

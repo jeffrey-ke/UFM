@@ -37,9 +37,11 @@ the `jeffke613/refseg-datasets` repo this pulls from). Data sync here is just an
 ```yaml
 defaults:
   - default
-root_data_dir: datasets            # dspull lands shelf-optflow here -> datasets/shelf-optflow
-uniception_pth_root: checkpoints   # unused for fine-tuning; non-MISSING so Hydra resolves
-tartanair_root_data_dir: datasets  # unused for optflow fine-tuning
+# Hydra runs chdir=True (cwd becomes outputs/<run>/), so a bare relative path would resolve
+# against the run dir. ${hydra:runtime.cwd} is the launch dir (repo root) — absolute & chdir-proof.
+root_data_dir: ${hydra:runtime.cwd}/datasets            # dspull lands shelf-optflow here
+uniception_pth_root: ${hydra:runtime.cwd}/checkpoints   # unused for fine-tuning; non-MISSING so Hydra resolves
+tartanair_root_data_dir: ${hydra:runtime.cwd}/datasets  # unused for optflow fine-tuning
 ```
 
 `UFM-train/.artifacts.yaml`:
@@ -48,7 +50,7 @@ tartanair_root_data_dir: datasets  # unused for optflow fine-tuning
 dataset: { repo: jeffke613/refseg-datasets, dir: datasets, require_name: true }
 ```
 
-`.gitignore`: add `/datasets`. On *this* machine, optionally
+`.gitignore`: add `/datasets` and `/outputs` (Hydra run dirs). On *this* machine, optionally
 `ln -s /data/user/jeffk/datasets datasets` to skip a 4.7 G re-pull; fresh machine = real dir
 + `dspull shelf-optflow`.
 
@@ -56,13 +58,16 @@ dataset: { repo: jeffke613/refseg-datasets, dir: datasets, require_name: true }
 
 ```bash
 cd ~/repo/UFM-train
-gh repo fork UniFlowMatch/UFM --clone=false          # -> jeffrey-ke/UFM
+gh repo fork UniFlowMatch/UFM --clone=false          # -> jeffrey-ke/UFM  (no --remote w/ a repo arg)
 git remote add fork git@github.com:jeffrey-ke/UFM.git
-git push fork train                                  # b902444 (+2 ahead of origin/train)
+# Commit the Phase-A edits FIRST (optflow integration + registry config, minus outputs/) so the
+# pin is functional, THEN push — the workspace pins this commit, not the pre-edit b902444:
+git add -A && git commit -m "Optflow fine-tuning integration + artifact registry config"   # -> 658fee4
+git push fork train
 
 cd ~/repo/refseg-workspace
-git submodule add -b train git@github.com:jeffrey-ke/UFM.git UFM-train
-#   recurse pulls UFM-train's own submodule UniCeption (castacks/UniCeption, public)
+git submodule add -b train git@github.com:jeffrey-ke/UFM.git UFM-train   # pins 658fee4
+git -C UFM-train submodule update --init --recursive                     # UniCeption (castacks, public)
 #   ../vision_core resolves to refseg-workspace/vision_core (already a submodule)
 git add -A && git commit -m "Add UFM-train submodule (optflow fine-tune)" && git push
 ```

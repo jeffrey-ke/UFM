@@ -1,0 +1,8 @@
+defaults:
+  - default
+
+optflow_pairs: 100_000
+data_subsample_ratio: 1
+
+train_dataset_str: "
+  + ${dataset.quantity_options.train.optflow_pairs} @ ${dataset.optflow_isaac.train.dataset_str}[::${dataset.quantity_options.train.data_subsample_ratio}]"

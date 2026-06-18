@@ -13,6 +13,7 @@ defaults:
   - hd1k: default
   - spring: default
   - kubric4d: default
+  - optflow_isaac: default
   - quantity_options: ufm_100k
 
 

@@ -14,6 +14,24 @@ resolution-markers = [
 ]
 
 [[package]]
+name = "accelerate"
+version = "1.14.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "huggingface-hub" },
+    { name = "numpy" },
+    { name = "packaging" },
+    { name = "psutil" },
+    { name = "pyyaml" },
+    { name = "safetensors" },
+    { name = "torch" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/8d/75/94cd5d389649578aca399e5aa822637eec18319a1dadc400ffe2f9a7493f/accelerate-1.14.0.tar.gz", hash = "sha256:41b9c4377a54e0b460a959b0defa1b736e4ca0a2373252d9a539964c2afe3c8d", size = 412167, upload-time = "2026-06-11T13:45:52.326Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a8/db/253133d7e7cb40d3af384bb2f5c0b4a2b7fdcffbc95c688cc67a20a3c103/accelerate-1.14.0-py3-none-any.whl", hash = "sha256:e94390c2863b873be18f623f9df48a0d8fe5eff13ea7f1a00092b0a7904888c6", size = 389246, upload-time = "2026-06-11T13:45:50.477Z" },
+]
+
+[[package]]
 name = "aiohappyeyeballs"
 version = "2.6.2"
 source = { registry = "https://pypi.org/simple" }
@@ -2188,6 +2206,27 @@ wheels = [
 ]
 
 [[package]]
+name = "peft"
+version = "0.19.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "accelerate" },
+    { name = "huggingface-hub" },
+    { name = "numpy" },
+    { name = "packaging" },
+    { name = "psutil" },
+    { name = "pyyaml" },
+    { name = "safetensors" },
+    { name = "torch" },
+    { name = "tqdm" },
+    { name = "transformers" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/86/cf/037f1e3d5186496c05513a6754639e2dab3038a05f384284d49a9bd06a2d/peft-0.19.1.tar.gz", hash = "sha256:0d97542fe96dcdaa20d3b81c06f26f988618f416a73544ab23c3618ccb674a40", size = 763738, upload-time = "2026-04-16T15:46:45.105Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e8/b6/f54d676ed93cc2dd2234c3b172ea9c8c3d7d29361e66b1b23dec57a67465/peft-0.19.1-py3-none-any.whl", hash = "sha256:2113f72a81621b5913ef28f9022204c742df111890c5f49d812716a4a301e356", size = 680692, upload-time = "2026-04-16T15:46:42.886Z" },
+]
+
+[[package]]
 name = "pillow"
 version = "12.2.0"
 source = { registry = "https://pypi.org/simple" }
@@ -3564,6 +3603,7 @@ dependencies = [
     { name = "matplotlib" },
     { name = "numpy" },
     { name = "opencv-python" },
+    { name = "peft" },
     { name = "pillow" },
     { name = "pypng" },
     { name = "scikit-learn" },
@@ -3601,6 +3641,7 @@ requires-dist = [
     { name = "matplotlib" },
     { name = "numpy" },
     { name = "opencv-python" },
+    { name = "peft", specifier = ">=0.13" },
     { name = "pillow" },
     { name = "pre-commit", marker = "extra == 'dev'" },
     { name = "pypng" },

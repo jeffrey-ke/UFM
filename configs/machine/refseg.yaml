@@ -1,0 +1,12 @@
+defaults:
+  - default
+
+# Portable paths for the refseg-workspace layout. Hydra runs with chdir=True (cwd becomes
+# the per-run output dir), so a bare relative path would resolve against outputs/<date>/<time>/.
+# ${hydra:runtime.cwd} is the original launch dir (the UFM-train repo root) — absolute and
+# chdir-proof. `art pull dataset shelf-optflow` lands the data at <cwd>/datasets/shelf-optflow.
+root_data_dir: ${hydra:runtime.cwd}/datasets
+# Unused for fine-tuning (resume_model=infinity1096/UFM-Base carries the encoder), but the
+# field is MISSING in machine/default.yaml so it must be set to something resolvable.
+uniception_pth_root: ${hydra:runtime.cwd}/checkpoints
+tartanair_root_data_dir: ${hydra:runtime.cwd}/datasets

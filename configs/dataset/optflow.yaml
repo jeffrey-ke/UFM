@@ -1,0 +1,8 @@
+defaults:
+  - default
+  - override quantity_options/train: optflow_100k
+  - override quantity_options/val: optflow_full
+
+# isaac_datagen optflow renders are 1080x1920; pick a UFM resolution bucket (override as needed).
+resolution_train: ${dataset.resolution_options.560_many_ar}
+resolution_val: ${dataset.resolution_options.560_1_33_ar}

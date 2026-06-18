@@ -16,12 +16,17 @@ Correspondence with Flow"* (`ufm.pdf`, arXiv:2506.09278).
 
 ## Reference docs (read these first)
 
-- **[docs/paper-code-map.md](docs/paper-code-map.md)** — full **all-branch** paper→code map: the
-  complete paper inventory (concepts, contributions, algorithms, losses, training tricks,
-  architectures, stages, I/O), an annotated per-branch codebase index, the per-item mapping table
-  with `[branch] file:line` citations, and sections on dead code, code-only mechanisms, paper/code
-  divergences, and open questions. **Consult it before reasoning about how any paper claim maps to
-  this code** — it records what is implemented-and-used vs. dead/partial/missing, on which branch.
+- **[docs/paper-code-map.md](docs/paper-code-map.md)** — ⭐ **FIRST STOP for any training- or
+  data-pipeline work, and before reasoning about how any paper claim maps to this code.** Full
+  **all-branch** paper→code map: the complete paper inventory (concepts, contributions, algorithms,
+  losses, training tricks, architectures, stages, I/O), an annotated per-branch codebase index, the
+  per-item mapping table with `[branch] file:line` citations, and sections on dead code, code-only
+  mechanisms, paper/code divergences, and open questions. It records what is implemented-and-used vs.
+  dead/partial/missing, on which branch. Especially load-bearing for the **covisibility-from-depth GT**
+  (items A2/A3, `datasets/base/flow_postprocessing.py`): that GPU pathway — not `_get_views` — is where
+  dataset-adapter bugs surface (e.g. every depth view MUST carry `covisible_rendering_parameters` or the
+  `PATHWAY_REQUIREMENTS` collate asserts). When you build/modify a dataset adapter, trace it through the
+  map's A2/A3 entries before claiming it's training-ready.
 - `README.md` — install, CLI, Python API, model-zoo checkpoints.
 
 ## The code spans three branches

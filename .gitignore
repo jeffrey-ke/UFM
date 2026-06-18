@@ -6,6 +6,12 @@ ufm_model/**
 checkpoints/**
 .DS_Store
 
+# Heavy artifacts — synced via `art` (.artifacts.yaml); HF is the source of truth.
+/datasets
+
+# Hydra run outputs (checkpoints + logs per run; large, never committed).
+/outputs
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 **/__pycache__/

@@ -19,6 +19,7 @@ from uniflowmatch.datasets.scannetpp import ScanNetpp
 from uniflowmatch.datasets.spring import Spring
 from uniflowmatch.datasets.staticthings3d import StaticThings3D
 from uniflowmatch.datasets.tartanair_assembled import TartanairAssembled
+from uniflowmatch.datasets.optflow_isaac import OptFlowUFMAdapter
 
 # datasets for evaluation
 from uniflowmatch.datasets.dtu import DTU
@@ -37,6 +38,7 @@ __all__ = [
     "Spring",
     "HD1K",
     "Kubric4D",
+    "OptFlowUFMAdapter",
     "DTU",
     "ETH3D",
     "get_data_loader",

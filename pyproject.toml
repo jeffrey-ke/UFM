@@ -51,6 +51,7 @@ dependencies = [
     "wandb",
     "lightning",
     "transformers",
+    "peft>=0.13",
     "vision-core",
 ]
 

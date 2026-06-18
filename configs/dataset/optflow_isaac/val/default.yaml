@@ -1,0 +1,14 @@
+dataset_str:
+  "OptFlowUFMAdapter(
+    dataset_dir='${dataset.optflow_isaac.val.dataset_dir}',
+    resolution=${dataset.optflow_isaac.val.dataset_resolution},
+    seed=${dataset.optflow_isaac.val.seed},
+    transform='${dataset.optflow_isaac.val.transform}',
+    data_norm_type='${dataset.optflow_isaac.val.data_norm_type}',
+    min_px=${dataset.optflow_isaac.val.min_px})"
+dataset_dir: ${machine.root_data_dir}/shelf-optflow
+dataset_resolution: ${dataset.resolution_val}
+seed: 777
+transform: 'imgnorm'
+data_norm_type: ${model.data_norm_type}
+min_px: 2048

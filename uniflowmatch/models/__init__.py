@@ -7,6 +7,7 @@ from .base import (
     UFMOutputInterface,
     UniFlowMatchModelsBase,
 )
+from .lora import LoRAUniFlowMatch, merge_lora_
 from .ufm import (
     UniFlowMatch,
     UniFlowMatchClassificationRefinement,
@@ -22,4 +23,6 @@ __all__ = [
     "UniFlowMatch",
     "UniFlowMatchClassificationRefinement",
     "UniFlowMatchConfidence",
+    "LoRAUniFlowMatch",
+    "merge_lora_",
 ]

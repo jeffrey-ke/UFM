@@ -1,0 +1,15 @@
+# Differential-LR scheme for LoRAUniFlowMatch (model=uniflowmatch_lora). Freezes the pretrained encoder +
+# info_sharing base (lr 0 → requires_grad off + dropped from AdamW) and trains only their LoRA adapters
+# plus the DPT heads. REQUIRED pairing: the LoRA model's get_parameter_groups emits the extra
+# encoder_lora/info_sharing_lora groups, so a scheme lacking those keys (e.g. training_scheme=default)
+# would KeyError at configure_optimizers (train_pl.py:179).
+defaults:
+  - default
+
+learning_rate:
+  encoder: 0            # frozen base (LoRA-only adaptation)
+  info_sharing: 0       # frozen base (LoRA-only adaptation)
+  encoder_lora: 1e-4    # LoRA adapters typically want a higher LR than full-FT
+  info_sharing_lora: 1e-4
+  output_head: 1e-4
+  uncertainty_head: 1e-4

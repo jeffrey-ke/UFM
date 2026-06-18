@@ -1,0 +1,17 @@
+# LoRA smoke profile — like training_scheme=smoke but carries the LoRA learning_rate keys
+# (encoder_lora/info_sharing_lora) that LoRAUniFlowMatch.get_parameter_groups requires. (training_scheme=smoke
+# only defines the 4 base keys → KeyError with the LoRA model.) num_epochs=1 keeps everything in epoch 0
+# (no sampler reseed); limit_train_batches drives the steps; scheduler=null gives a constant LR (cosine's
+# ~500k-step warmup would pin LR≈0 on a short run → flat loss, a false "not learning").
+defaults:
+  - lora
+  - override lr_scheduler: default   # scheduler=null → constant LR
+
+effective_batch_size: 2              # symmetrize doubles the batch; ViT-L @ 560 is VRAM-heavy
+num_epochs: 1
+limit_train_batches: 50
+limit_val_batches: 0
+num_sanity_val_steps: 0
+validate_every_epochs: 100000
+save_ckpt_every_epochs: 100000
+save_ckpt_every_steps: 100000

@@ -46,3 +46,10 @@ precision: bf16-mixed
 # validation
 validate_every_epochs: 1
 validate_steps: null
+
+# Lightning batch/sanity limits (no-op defaults; overridden by training_scheme=smoke).
+# NOTE: do NOT use Trainer(overfit_batches=...) here — it swaps the custom BatchedRandomSampler for a
+# SequentialSampler (wrong tuple-index type + no set_epoch → crash). Limit batches instead.
+limit_train_batches: 1.0
+limit_val_batches: 1.0
+num_sanity_val_steps: 2

@@ -1,0 +1,5 @@
+# Artifact registry for the `art` tool (~/dotfiles/bin/art). `dir` resolves
+# relative to THIS file. UFM-train fine-tunes on the optflow render umbrella
+# (e.g. `art pull dataset shelf-optflow`); the base model is the public
+# infinity1096/UFM-Base, auto-downloaded — no checkpoint namespace needed here.
+dataset: { repo: jeffke613/refseg-datasets, dir: datasets, require_name: true }

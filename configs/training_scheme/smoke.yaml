@@ -1,0 +1,20 @@
+# Overfit-one-batch smoke profile for the optflow adapter (Stage 2). Pairs with:
+#   dataset=optflow loss=robust_epe_covisibility training_scheme=smoke \
+#   dataset.quantity_options.train.data_subsample_ratio=1465  (→ tiny unique pool) \
+#   dataset.resolution_train='${dataset.resolution_options.560_1_33_ar}'  dataset.num_workers=0
+# num_epochs=1 keeps everything in epoch 0 (no sampler reseed → no SequentialSampler issue), and
+# limit_train_batches drives many optimizer steps on the tiny pool. effective_batch_size is small
+# because symmetrize_inputs doubles the batch and ViT-L @ 560 is VRAM-heavy.
+defaults:
+  - default
+  - override lr_scheduler: default   # scheduler=null → constant LR. cosine's warmup (10 epochs ×
+                                     # ~50k iters/epoch ≫ our 200 steps) would pin LR near 0 → no learning.
+
+effective_batch_size: 2
+num_epochs: 1
+limit_train_batches: 200
+limit_val_batches: 0
+num_sanity_val_steps: 0
+validate_every_epochs: 100000
+save_ckpt_every_epochs: 100000
+save_ckpt_every_steps: 100000

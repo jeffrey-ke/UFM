@@ -16,6 +16,7 @@ from transformers.optimization import get_cosine_with_min_lr_schedule_with_warmu
 from uniflowmatch.datasets import *
 from uniflowmatch.loss import get_loss
 from uniflowmatch.models import (
+    LoRAUniFlowMatch,
     UniFlowMatch,
     UniFlowMatchClassificationRefinement,
     UniFlowMatchConfidence,
@@ -481,6 +482,7 @@ def train_pl_main(args):
         "UniFlowMatch": UniFlowMatch,
         "UniFlowMatchConfidence": UniFlowMatchConfidence,
         "UniFlowMatchClassificationRefinement": UniFlowMatchClassificationRefinement,
+        "LoRAUniFlowMatch": LoRAUniFlowMatch,
     }
 
     raw_model = MODEL_CLASSES[args["model"]["model_class"]](**args["model"]["model_args"])
@@ -509,7 +511,7 @@ def train_pl_main(args):
 
         # remove the "._orig__mod" from the state dict (caused by torch compile in old code version)
         state_dict = {k.replace("._orig_mod", ""): v for k, v in ckpt["state_dict"].items()}
-        
+
         try:
             model.load_state_dict(state_dict, strict=True)
         except RuntimeError:
@@ -544,6 +546,9 @@ def train_pl_main(args):
         enable_model_summary=True,
         use_distributed_sampler=False,  # avoid lightning to replace our sampler
         max_epochs=args["training_scheme"]["num_epochs"],
+        limit_train_batches=args["training_scheme"].get("limit_train_batches", 1.0),  # smoke/overfit knob
+        limit_val_batches=args["training_scheme"].get("limit_val_batches", 1.0),
+        num_sanity_val_steps=args["training_scheme"].get("num_sanity_val_steps", 2),
         log_every_n_steps=1,
         logger=logger,
         precision=args["training_scheme"]["precision"],  # typically "bf16-mixed"

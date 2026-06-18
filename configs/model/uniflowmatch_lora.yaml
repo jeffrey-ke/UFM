@@ -1,0 +1,56 @@
+# LoRA-adapted UFM. Same architecture as uniflowmatch_covisibility, but the model loads a fully-trained
+# UFM checkpoint and injects LoRA adapters into the encoder + info_sharing transformer; the DPT heads stay
+# fully fine-tuned. Select with `model=uniflowmatch_lora` and pair with `training_scheme=lora`
+# (or `training_scheme=lora_smoke`). Implementation: uniflowmatch/models/lora.py.
+defaults:
+  - encoder: dinov2_l
+  - decoder: base_global
+  - feature_head: dpt
+  - adaptor_map: flow_scale_both
+  - uncertainty_adaptor_map: covisibility
+  - uncertainty_feature_head: dpt
+
+model_class: LoRAUniFlowMatch
+
+data_norm_type: 'dinov2'
+info_sharing_and_head_structure: 'dual+single'
+num_channels: 2
+
+# for decoder
+returned_intermediate_layers: [5, 8]
+transformer_dim: ${model.decoder.transformer_dim}
+pretrained_backbone_checkpoint_path: null
+
+detach_uncertainty_head: False
+
+# Full pretrained UFM to adapt (HF Hub repo id or a local .ckpt). Loaded BEFORE LoRA injection so the
+# pretrained weights land in the to-be-wrapped Linears (PEFT renames keys ...qkv.weight -> ...base_layer.weight).
+pretrained_checkpoint_path: infinity1096/UFM-Base
+
+# LoRA adapter config, per submodule. rsLoRA on; more rank on the 24-layer ViT-L encoder (cf. UFM T7:
+# the encoder benefits from real adaptation capacity). Override e.g. model.lora.encoder.r=64 on the CLI.
+lora:
+  encoder:      { r: 32, alpha: 32, dropout: 0.0, rslora: true, init: true }
+  info_sharing: { r: 16, alpha: 16, dropout: 0.0, rslora: true, init: true }
+
+model_args:
+  # Encoder Args
+  encoder_str: ${model.encoder.encoder_str}
+  encoder_kwargs: ${model.encoder.encoder_kwargs}
+  # Info Sharing Args
+  info_sharing_str: ${model.decoder.info_sharing_type}
+  info_sharing_kwargs: ${model.decoder.info_sharing_kwargs}
+  # Output Head Args
+  head_type: dpt
+  feature_head_kwargs: ${model.feature_head}
+  adaptors_kwargs: ${model.adaptor_map}
+  # Uncertainty Head Args
+  detach_uncertainty_head: ${model.detach_uncertainty_head}
+  uncertainty_head_type: dpt
+  uncertainty_head_kwargs: ${model.uncertainty_feature_head}
+  uncertainty_adaptors_kwargs: ${model.uncertainty_adaptor_map.adaptor_map_kwargs}
+  # Pretrained checkpoint (full model, consumed by LoRAUniFlowMatch before injection)
+  pretrained_backbone_checkpoint_path: ${model.pretrained_backbone_checkpoint_path}
+  pretrained_checkpoint_path: ${model.pretrained_checkpoint_path}
+  # LoRA adapter config
+  lora: ${model.lora}

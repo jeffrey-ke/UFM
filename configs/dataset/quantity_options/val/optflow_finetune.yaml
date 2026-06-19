@@ -1,0 +1,9 @@
+# Val slice = last 15% of the optflow pool ([2490:]). Disjoint from train ([:2490]) by construction:
+# both adapters build the same deterministic index from the same dir, so the slices don't overlap.
+#
+# ⚠ DATA-COUPLED INDEX: 2490 must match the train slice (see train/optflow_finetune.yaml) and be
+#   recomputed for the current shelf-optflow length (render000/001/003), or the split is wrong.
+defaults:
+  - default
+
+test_dataset_str: "${dataset.optflow_isaac.val.dataset_str}[2490:]"

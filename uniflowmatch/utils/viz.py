@@ -114,6 +114,40 @@ def warp_image_with_flow(source_image, source_mask, target_image, flow) -> np.nd
     return warped_image
 
 
+def forward_warp_image(image, flow, mask=None) -> np.ndarray:
+    """Forward-warp (scatter) the image along the flow: pixel (x, y) is written to
+    (x + flow_x, y + flow_y). Flow is source->target displacement, so this pushes the SOURCE
+    image into the TARGET frame (img1 warped by fwd flow ~= img2). Collisions are last-write-wins
+    and unmapped pixels stay black (the holes inherent to forward warping).
+
+    Args:
+        image: np.ndarray (H, W, 3) in [0, 1] — the image being warped (source).
+        flow:  np.ndarray (H, W, 2) — source->target displacement.
+        mask:  optional (H, W, 1) source mask; only mapped pixels with mask>0.5 are scattered.
+    Returns:
+        np.ndarray (H, W, 3) in [0, 1], the source scattered into the target frame.
+    """
+    height, width = image.shape[:2]
+    y, x = np.mgrid[0:height, 0:width]
+    x_dst = np.round(x + flow[..., 0]).astype(np.int64)
+    y_dst = np.round(y + flow[..., 1]).astype(np.int64)
+
+    valid = (
+        np.isfinite(flow[..., 0])
+        & np.isfinite(flow[..., 1])
+        & (x_dst >= 0)
+        & (x_dst < width)
+        & (y_dst >= 0)
+        & (y_dst < height)
+    )
+    if mask is not None:
+        valid = valid & (mask[..., 0] > 0.5)
+
+    warped = np.zeros_like(image)
+    warped[y_dst[valid], x_dst[valid]] = image[y[valid], x[valid]]
+    return warped
+
+
 def visualize_flow(flow, flow_scale):
     """
     Visualize optical flow with direction modulating color and magnitude modulating saturation in HSV color space.
@@ -311,6 +345,58 @@ class MaskedFlowVisualizer(VisualizerBase):
             return None
 
         return (flow_viz * (mask_viz.astype(np.float32) / 255)).astype(np.uint8)
+
+
+class WarpVisualizer(VisualizerBase):
+    """Warp the target image (img2) back into the source frame (img1) with a flow field, via
+    warp_image_with_flow. With an accurate flow, warped(img2) ≈ img1, so this shows the
+    correspondence as an actual reconstructed image. Use flow_field='result/flow_fwd' for the
+    PREDICTED warp, 'batch/flow_fwd' for the GT warp. Optionally black-out non-covisible pixels
+    via mask_field (e.g. batch/occlusion_fwd)."""
+
+    def __init__(self, flow_field: str = "result/flow_fwd", mask_field: Optional[str] = None,
+                 mode: str = "inverse"):
+        assert mode in ("inverse", "forward"), f"WarpVisualizer mode must be inverse|forward, got {mode}"
+        self.flow_field = flow_field
+        self.mask_field = mask_field
+        self.mode = mode  # 'inverse': gather img2 into img1 frame (~=img1); 'forward': scatter img1 into img2 frame (~=img2)
+        self.src_viz = RGBVisualizer("batch/img1")
+        self.tgt_viz = RGBVisualizer("batch/img2")
+        self.mask_viz = MaskVisualizer(mask_field) if mask_field is not None else None
+
+    def visualize(
+        self, batch_idx: int, model_result: UFMOutputInterface, batch_data: Dict[str, Any]
+    ) -> Optional[np.ndarray]:
+        source = self.src_viz.visualize(batch_idx, model_result, batch_data)  # uint8 HWC, img1
+        target = self.tgt_viz.visualize(batch_idx, model_result, batch_data)  # uint8 HWC, img2
+        if source is None or target is None:
+            return None
+
+        if self.flow_field == "result/flow_fwd":
+            flow_source = model_result.flow.flow_output[batch_idx].detach()
+        elif self.flow_field == "batch/flow_fwd":
+            flow_source = batch_data[0]["flow"][batch_idx]
+        else:
+            return None
+
+        # raw pixel displacements (H, W, 2); avoid type_conversion's <=1.0 auto-scaling
+        flow_np = np.nan_to_num(flow_source.float().cpu().numpy().transpose(1, 2, 0))
+
+        mask_np = None
+        if self.mask_viz is not None:
+            mask_img = self.mask_viz.visualize(batch_idx, model_result, batch_data)  # uint8 HWC, 3ch
+            if mask_img is not None:
+                mask_np = mask_img[..., :1].astype(np.float32) / 255.0
+
+        if self.mode == "inverse":
+            # gather img2 into img1's frame; reconstructs img1
+            warped = warp_image_with_flow(
+                source.astype(np.float32) / 255.0, mask_np, target.astype(np.float32) / 255.0, flow_np
+            )
+        else:
+            # scatter img1 into img2's frame using the flow; reconstructs img2
+            warped = forward_warp_image(source.astype(np.float32) / 255.0, flow_np, mask_np)
+        return np.clip(warped * 255.0, 0, 255).astype(np.uint8)
 
 
 class MaskedFlowLossVisualizer(VisualizerBase):
@@ -776,6 +862,8 @@ def get_visualizer(viz_config: Dict[str, Any]) -> VisualizerBase:
         )
     elif class_name == "MaskedFlowVisualizer":
         visualizer = MaskedFlowVisualizer(**kwargs)
+    elif class_name == "WarpVisualizer":
+        visualizer = WarpVisualizer(**kwargs)
     elif class_name == "MaskedFlowLossVisualizer":
         visualizer = MaskedFlowLossVisualizer(**kwargs)
     elif class_name == "CovarianceVisualizer":

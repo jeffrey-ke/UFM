@@ -1,0 +1,13 @@
+# Train slice = first 85% of the optflow pool. Disjoint from val (which takes [2490:]).
+#
+# ⚠ DATA-COUPLED INDEX: 2490 = floor(0.85 × 2930), where 2930 was render000's unit count at plan
+#   time. shelf-optflow now also has render001/render003, so the adapter's total length differs —
+#   recompute the split index against the CURRENT `len(OptFlowUFMAdapter(dataset_dir=shelf-optflow))`
+#   before a real run, or train/val will not be an 85/15 disjoint split.
+defaults:
+  - default
+
+optflow_pairs: 2490               # ≈ one pass over the train slice per epoch
+data_subsample_ratio: 1
+train_dataset_str: "
+  + ${dataset.quantity_options.train.optflow_pairs} @ ${dataset.optflow_isaac.train.dataset_str}[:2490][::${dataset.quantity_options.train.data_subsample_ratio}]"

@@ -1,0 +1,94 @@
+fit:
+  interval: 200
+  num_samples: 1
+
+validate:
+  interval: 1
+  num_samples: "all"
+
+visualizers:
+  flow_prediction:
+    class: ConcatVisualizer
+    kwargs:
+      visualizers:
+        - class: RGBVisualizer
+          kwargs:
+            field_name: batch/img1
+        - class: RGBVisualizer
+          kwargs:
+            field_name: batch/img2
+        - class: FlowVisualizer
+          kwargs:
+            field_name: batch/flow_fwd
+        - class: MaskVisualizer
+          kwargs:
+            field_name: batch/occlusion_fwd
+        - class: MaskedFlowVisualizer
+          kwargs:
+            flow_field: result/flow_fwd
+            mask_field: batch/occlusion_fwd
+            flow_scale: 25
+        - class: MaskedFlowVisualizer
+          kwargs:
+            flow_field: batch/flow_fwd
+            mask_field: batch/occlusion_fwd
+            flow_scale: 25
+
+  covisible_prediction:
+    class: ConcatVisualizer
+    kwargs:
+      visualizers:
+        - class: RGBVisualizer
+          kwargs:
+            field_name: batch/img1
+        - class: RGBVisualizer
+          kwargs:
+            field_name: batch/img2
+        - class: MaskVisualizer
+          kwargs:
+            field_name: batch/occlusion_fwd
+        - class: MaskVisualizer
+          kwargs:
+            field_name: result/occlusion_fwd
+
+  error_prediction:
+    class: ConcatVisualizer
+    kwargs:
+      visualizers:
+        - class: RGBVisualizer
+          kwargs:
+            field_name: batch/img1
+        - class: RGBVisualizer
+          kwargs:
+            field_name: batch/img2
+        - class: ErrorVisualizer
+          kwargs:
+            range: occlusion
+        - class: ErrorOutlierVisualizer
+          kwargs:
+            range: occlusion
+
+  # img1 ‖ img2 ‖ img2→img1 by PRED flow (inverse, ≈img1) ‖ img2→img1 by GT flow (inverse, ≈img1)
+  #   ‖ img1→img2 by GT flow (forward/scatter, ≈img2; black = holes nothing maps to)
+  warp_prediction:
+    class: ConcatVisualizer
+    kwargs:
+      visualizers:
+        - class: RGBVisualizer
+          kwargs:
+            field_name: batch/img1
+        - class: RGBVisualizer
+          kwargs:
+            field_name: batch/img2
+        - class: WarpVisualizer
+          kwargs:
+            flow_field: result/flow_fwd
+            mode: inverse
+        - class: WarpVisualizer
+          kwargs:
+            flow_field: batch/flow_fwd
+            mode: inverse
+        - class: WarpVisualizer
+          kwargs:
+            flow_field: batch/flow_fwd
+            mode: forward

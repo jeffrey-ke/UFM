@@ -1,9 +1,9 @@
-# Fine-tune dataset: isaac_datagen shelf-optflow with a disjoint 85/15 train/val split.
-# Like optflow.yaml, but swaps in the finetune quantity_options (which carry the slice).
 defaults:
   - default
   - override quantity_options/train: optflow_finetune
   - override quantity_options/val: optflow_finetune
+  - override optflow_isaac/train: finetune
 
-resolution_train: ${dataset.resolution_options.560_many_ar}
-resolution_val: ${dataset.resolution_options.560_1_33_ar}
+# Fixed single AR (~16:9, matches 1080×1920 renders) — no multi-AR bucket pool.
+resolution_train: ${dataset.resolution_options.560_1_77_ar}
+resolution_val: ${dataset.resolution_options.560_1_77_ar}

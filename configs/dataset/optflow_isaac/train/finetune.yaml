@@ -1,0 +1,5 @@
+defaults:
+  - default
+
+# No photometric aug — imgnorm only (matches val).
+transform: 'imgnorm'

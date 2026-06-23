@@ -1,18 +1,18 @@
-# Light-touch fine-tune of a pretrained UFM-Base (Large) — mirrors the paper's UFM-980 fine-tune
-# (≈10× below base LRs, frozen uncertainty head, short cosine schedule). Deltas over `default`.
+# Light-touch full fine-tune on shelf-optflow (pairs with dataset=optflow_finetune).
+# Aug off: symmetrize_inputs=False (no ref↔obs batch doubling).
 defaults:
-  - default                       # keeps lr_scheduler: cosine, AdamW betas/wd, grad-clip, bf16-mixed
+  - default
 
-effective_batch_size: 2           # default 128; single GPU, ViT-L @ 560 (+symmetrization) is VRAM-heavy
-num_epochs: 6                     # ≈6 passes; with optflow_pairs=2490 & ebs=2 → ~1245 iters/epoch → ~7470 steps
-warmup_epochs: 0.6                # ~0.6×1245 ≈ 747 steps ≈ 10% (NOT default's 10-epoch ≈ 500k-step ramp)
+symmetrize_inputs: False
 
+effective_batch_size: 2
+num_epochs: 6                     # ≈ 6 passes ≈ 7470 steps (1245/epoch @ optflow_pairs=2490)
+warmup_epochs: 0.6                # 0.6 × 1245 ≈ 747 steps ≈ 10%
 learning_rate:
-  encoder: 1.0e-6                 # base 5e-6  (5× lower)
-  info_sharing: 1.0e-5            # base 1e-4  (10× lower)
-  output_head: 1.0e-5            # base 1e-4  (10× lower)
-  uncertainty_head: 0             # frozen: lr 0 ⇒ requires_grad False (per UFM-980 fine-tune)
-
+  encoder: 1.0e-6
+  info_sharing: 1.0e-5
+  output_head: 1.0e-5
+  uncertainty_head: 0             # frozen (lr 0 → requires_grad False), per UFM-980
 save_ckpt_every_steps: 2000
 save_ckpt_every_epochs: 1
 keep_n_epoch_ckpts: 3

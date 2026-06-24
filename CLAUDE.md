@@ -193,6 +193,12 @@ Move completed plans to `plans/completed/`.
 1. Read `plans/active/` -- don't duplicate in-progress work.
 2. Read `plans/completed/` -- learn from past decisions and avoid re-solving solved problems.
 3. Read relevant docs in `.docs_claude/` -- context that shaped the current design.
+4. Scan `../alldocs/` -- the workspace aggregate that symlinks **every** sibling repo's `.docs_claude/`
+   (`vision_core`, `reference_matching`, `isaac_datagen`, `segmentation`, `UFM-train`, `model`,
+   `nnscope`, `benchmark`) into one tree. Earlier implementation plans there often record **design
+   decisions to maintain**, **possible bugs / incorrect behavior** to watch for, and **why** a decision
+   was made -- i.e. what to look for and where. Changes here can ripple across repos, so read the
+   cross-repo plans before designing.
 
 ## Core beliefs
 
